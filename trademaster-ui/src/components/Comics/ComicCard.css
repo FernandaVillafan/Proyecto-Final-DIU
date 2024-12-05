@@ -1,0 +1,99 @@
+.comics-grid {
+    display: grid;
+    gap: 50px;
+    grid-template-columns: repeat(4, 1fr); 
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.comic-info {
+    background: white;
+    border: 2px solid #D1D1D1;
+    border-radius: var(--radius-card);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 250px;
+    overflow: hidden;
+    padding-bottom: 1rem;
+    position: relative;
+    width: 100%;
+}
+
+.comic-image-container {
+    align-items: center;
+    aspect-ratio: 3/4;
+    display: flex;
+    height: 350px;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.comic-image-container img {
+    height: 100%;
+    left: 0;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.span-favorite {
+    display: flex;
+    justify-content: flex-end;
+    margin: 12px 12px 0px 5px;
+    position: relative;
+    right: 0;
+    top: 0;
+    z-index: 1;
+}
+
+.favorite-icon {
+    height: 25px;
+    width: auto;
+}
+
+.comic-data {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1rem 0;
+}
+
+.title-text {
+    font-size: larger;
+    font-weight: 800;
+    margin-left: 1rem;
+}
+
+.edition-text {
+    color: #535B5B;
+    font-style: italic;
+    margin-left: 1rem;
+}
+
+.price-text {
+    color: var(--green);
+    font-style: italic;
+    font-weight: 800;
+    margin-left: 1rem;
+}
+
+.btn-details-div {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 0 1rem 1rem 1rem;
+    width: 100%;
+}
+
+.btn-delete-div {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 0 1rem 1rem 1rem;
+    width: 100%;
+}

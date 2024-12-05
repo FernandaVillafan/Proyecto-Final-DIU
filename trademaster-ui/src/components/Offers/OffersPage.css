@@ -1,0 +1,211 @@
+/* Página general */
+.offers-page {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5; /* Fondo general */
+  min-height: 100vh;
+}
+
+.btn-back2-container {
+  display: flex;
+  margin-left: 1.5rem;
+  margin-top: 4rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.btn-back2 {
+  background-color: transparent !important;
+  color: var(--dark-blue);
+  font-size: x-large;
+  font-weight: 800;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.btn-back2:hover {
+  background-color: transparent !important;
+}
+
+.loading-offers {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40vh;
+}
+
+/* Pestañas (Recibidas/Enviadas) */
+.tabs {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  margin-left: 60px;
+}
+
+/* Individual tabs */
+.tab-button {
+  padding: 10px 20px;
+  border: 2px solid #3b3b3b;
+  background-color: transparent;
+  color: #3b3b3b;
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-width: 150px; /* Ancho mínimo para las pestañas */
+}
+
+.tab-button.active {
+  background-color: #d9f5d4; /* Verde claro */
+  color: #007b55;
+  border-color: #007b55;
+}
+
+.tab-button:hover {
+  background-color: #e8e8e8;
+}
+
+/* Lista de ofertas */
+.offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 10px 60px;
+}
+
+/* Tarjeta de oferta */
+.offer-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  background-color: white;
+  display: flex;
+  gap: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.offer-card:hover {
+  transform: scale(1.01); /* Efecto hover */
+}
+
+/* Imagen del cómic */
+.offer-card img {
+  width: 100px;
+  height: 140px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Contenido principal de la oferta */
+.offer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.offer-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #3b3b3b;
+}
+
+.offer-header p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Cuerpo de la oferta */
+.offer-body .offer-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.offer-body .offer-description {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Pie de la tarjeta */
+.offer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+/* Fecha */
+.offer-footer .offer-date {
+  font-size: 14px;
+  color: #777;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Estado */
+.offer-footer .offer-status {
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+}
+
+.offer-footer .offer-status.pendiente {
+  background-color: #ffc107;
+  color: white;
+}
+
+/* Ver fotos */
+.offer-footer .view-photos {
+  font-size: 14px;
+  color: #007b55;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.offer-footer .view-photos:hover {
+  text-decoration: underline;
+}
+
+/* Botones */
+.offer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.reject-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.reject-button:hover {
+  background-color: #d32f2f;
+}
+
+.accept-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.accept-button:hover {
+  background-color: #388e3c;
+}

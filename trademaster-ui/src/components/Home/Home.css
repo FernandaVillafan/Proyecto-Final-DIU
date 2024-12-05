@@ -1,0 +1,84 @@
+.home-container {
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.home-image-container {
+    height: 100vh;
+    position: relative;
+    width: 100%;
+}
+
+.home-image-container img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.home-image-text {
+    left: 2%;
+    position: absolute;
+    top: 80%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.home-text {
+    color: white;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.home-image-arrow {
+    animation: bounce 2s infinite;
+    left: 50%;
+    position: absolute;
+    top: 90%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+.home-image-arrow img {
+    height: 90px;
+    position: relative;
+    width: 90px;
+}
+
+.new-comics-container {
+    background-color: var(--lime);
+    display: flex;
+    left: 0;
+    padding: 0.5rem 2rem;
+    position: relative;
+    right: 0;
+}
+
+.comics-span {
+    align-items: center;
+    color: var(--dark-blue);
+    display: flex;
+    font-size: x-large;
+    font-weight: 800;
+    justify-content: center;
+}
+
+.comics-icon {
+    height: auto;
+    margin: 0px 8px 4px 0px;
+    width: 35px;
+}
+
+/* Animación para la flecha */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translate(-50%, -50%);
+    }
+    40% {
+        transform: translate(-50%, calc(-50% - 20px));
+    }
+    60% {
+        transform: translate(-50%, calc(-50% - 10px));
+    }
+}

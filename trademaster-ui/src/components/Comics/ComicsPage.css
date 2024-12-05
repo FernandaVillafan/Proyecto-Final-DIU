@@ -1,0 +1,17 @@
+.category-select-container {
+  display: flex;
+  justify-content: flex-end;
+  margin: 7rem 3rem 1rem 0rem;
+  position: relative;
+  z-index: 100;
+}
+
+.category-select {
+  width: 450px;
+}
+
+.no-comics-message {
+  display: flex;
+  justify-content: center;
+  margin: 25px;
+}

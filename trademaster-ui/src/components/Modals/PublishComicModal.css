@@ -1,0 +1,63 @@
+.span-btn-close-publish {
+    margin-left: 60% !important;
+}
+
+.publish-form {
+    padding: 0rem 1rem;
+}
+
+.form-group-div {
+    display: flex;
+    gap: 20px;
+}
+
+.publish-form-group {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.publish-form-group select {
+    height: 45px;
+    margin-bottom: auto;
+    margin-top: auto;
+}
+
+.image-upload-div {
+    align-items: center;
+    border: 2px dashed rgb(0, 135, 94, 0.4) !important;
+    border-radius: var(--radius-button);
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+    min-height: 70px;
+    padding: 1rem 2rem;
+    position: relative;
+}
+
+.image-upload-div label {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+}
+
+.label-icon {
+    align-self: center;
+    display: flex;
+    height: 35px;
+    padding-bottom: 10px;
+    width: auto;
+}
+
+.image-upload-div span {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.span-red {
+    color: rgb(196, 16, 16);
+}

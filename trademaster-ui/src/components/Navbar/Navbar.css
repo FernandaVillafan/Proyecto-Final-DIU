@@ -1,0 +1,85 @@
+.navbar-container {
+    align-items: center;
+    background-color: var(--lime);
+    display: flex;
+    justify-content: space-between;
+    left: 0;
+    padding: 0.5rem 2rem;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.navbar-hidden {
+    transform: translateY(-100%);
+}
+
+.navbar-no-auth {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+  
+.navbar-logo {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    padding: 8px 0;
+}
+
+.navbar-logo a {
+    align-items: center;
+    display: flex;
+    height: 36px;
+}
+
+.logo {
+    height: 100%;
+    object-fit: contain;
+    width: auto;
+}
+  
+.navbar-buttons {
+    align-items: center;
+    display: flex;
+    gap: 2rem;
+}
+  
+.button-img {
+    height: 20px;
+    margin-left: 5px;
+    width: 20px;
+}
+
+.search-container {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    max-width: 500px;
+    position: relative;
+}
+
+.search-input {
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.search-button {
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center; 
+    margin-left: 92%;
+    position: absolute;
+}
+
+.search-button img {
+    height: 30px;
+    width: 30px;
+}
