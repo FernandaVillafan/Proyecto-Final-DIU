@@ -29,7 +29,11 @@ const UserPage = () => {
         
         <>
             {/* Componente Navbar */}
-            <Navbar alternativeIcon={editIcon} alternativeTitle={"Editar mi Perfil"} />
+            <Navbar 
+                alternativeIcon={editIcon} 
+                alternativeTitle={"Editar mi Perfil"}
+                isEditUserView={true}
+            />
 
             {/* Botón de 'Volver' */}
             <div className="btn btn-back-container">

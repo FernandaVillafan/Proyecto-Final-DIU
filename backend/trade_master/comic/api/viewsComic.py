@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from comic.models import Comic
 from user.models import User
-from comic.api.serializers import ComicSerializer
+from comic.api.serializers import ComicSerializer, UpdateComicSerializer
 
 """
     Función para obtener todos los cómics disponibles
@@ -103,23 +103,54 @@ def update_comic(request, comic_id):
         if comic.seller.id != request.user.id: # Solo el usuario que creó el cómic puede actualizarlo
             return Response({"error": "No tienes autorización para actualizar este cómic"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        comic_data = request.data
-        comic_serializer = ComicSerializer(comic, data=comic_data, partial=True)
+        data = request.data
+        update_serializer = UpdateComicSerializer(comic, data=data, partial=True)
         
-        if not comic_serializer.is_valid():
-            return Response(comic_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not update_serializer.is_valid():
+            return Response(update_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        comic = comic_serializer.save()
+        updated_comic = update_serializer.save()
         
-        response_serializer = ComicSerializer(comic)
-        
+        # Devolvemos los datos actualizados usando el ComicSerializer
+        comic_serializer = ComicSerializer(updated_comic)
         return Response(
             { "message": "¡El cómic ha sido actualizado correctamente!",
-              "data": response_serializer.data
+              "data": comic_serializer.data
             }, status=status.HTTP_200_OK)
         
     except Exception as _:
         return Response({"message": 'Error al intentar actualizar el cómic'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+"""
+    Función para actualizar la imagen del cómic
+    - int comic_id: ID del cómic
+""" 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_comic_image(request, comic_id):
+    try:
+        comic = get_object_or_404(Comic, id=comic_id)
+        image = request.FILES.get('image')
+        
+        if comic.seller.id != request.user.id: # Solo el usuario que creó el cómic puede actualizarlo
+            return Response({"error": "No tienes autorización para actualizar este cómic"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if not image:
+            return Response({'message': 'No se ha proporcionado ninguna imagen'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizamos la imagen del cómic
+        comic.image = image
+        comic.save()
+        
+        # Devolvemos los datos actualizados usando el ComicSerializer
+        comic_serializer = ComicSerializer(comic)
+        return Response(
+            { "message": "¡La imagen ha sido actualizada correctamente!",
+              "data": comic_serializer.data
+            }, status=status.HTTP_200_OK)
+    
+    except Exception as _:
+        return Response({"message": 'Error al intentar actualizar la imagen del cómic'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
 """
     Función para eliminar un cómic creado por el usuario

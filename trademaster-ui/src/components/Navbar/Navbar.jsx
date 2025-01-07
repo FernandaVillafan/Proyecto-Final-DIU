@@ -22,7 +22,12 @@ import loginIcon from "../../images/login.png";
 import searchIcon from "../../images/search.png";
 import comicsIcon from "../../images/book.png";
 
-const Navbar = ({ alternativeIcon, alternativeTitle }) => {
+const Navbar = ({ 
+  alternativeIcon, 
+  alternativeTitle,
+  isEditUserView = false,
+  isEditComicView = false
+}) => {
 
   // Datos y funciones obtenidos de los contextos
   const { isAuthenticated, logout } = useContext(AuthContext);
@@ -128,25 +133,31 @@ const Navbar = ({ alternativeIcon, alternativeTitle }) => {
             </span>
           </>
           
-          {/* Barra de búsqueda */}
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Busca tu cómic preferido...."
-              className="search-input"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
+          {(isEditUserView || isEditComicView) ? (
+            <div className="hidden-container"></div>
+          ) : (
+            <div className="search-container">
+              {/* Barra de búsqueda */}
+              <input
+                type="text"
+                placeholder="Busca tu cómic preferido...."
+                className="search-input"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
 
-            <button className="search-button">
-              <img src={searchIcon} alt="..." />
-            </button>
-          </div>
+              <button className="search-button">
+                <img src={searchIcon} alt="..." />
+              </button>
+            </div>
+          )}
 
           {/* Botón del usuario loggueado */}
           <UserButtons
             userData={userData}
             handleLogout={handleLogout}
+            isEditUserView={isEditUserView}
+            isEditComicView={isEditComicView}
           />
         </nav>
       )}

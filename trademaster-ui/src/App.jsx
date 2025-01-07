@@ -9,6 +9,7 @@ import { UserProvider } from "./context/UserContext";
 
 import ComicDetails from "./components/Comics/ComicDetails";
 import ComicsPage from "./components/Comics/ComicsPage";
+import EditPage from "./components/Comics/EditPage";
 import Home from "./components/Home/Home";
 import MyComics from "./components/Comics/MyComics";
 import OffersPage from "./components/Offers/OffersPage";
@@ -56,7 +57,14 @@ function App() {
                     }
                   />
 
-                  <Route path="/details/:comicId" element={<ComicDetails />} />
+                  <Route 
+                    path="/details/:comicId" 
+                    element={
+                      <ProtectedRoute>
+                        <ComicDetails />
+                      </ProtectedRoute>
+                    } 
+                  />
                   
                   <Route
                     path="/offers"
@@ -72,6 +80,15 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <UserPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route 
+                    path="/update-comic/:comicId"
+                    element={
+                      <ProtectedRoute>
+                        <EditPage />
                       </ProtectedRoute>
                     }
                   />

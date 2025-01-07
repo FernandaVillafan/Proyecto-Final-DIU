@@ -15,6 +15,7 @@ import swalMessages from '../../services/SwalMessages';
 // Importamos los íconos (imágenes png)
 import favoriteIcon from '../../images/favorite.png';
 import favoriteRedIcon from '../../images/red-heart.png';
+import editIcon from '../../images/edit.png';
 import detailsIcon from '../../images/details.png';
 import deleteIcon from '../../images/delete.png';
 import defaultImage from '../../images/default-comic.jpeg';
@@ -97,6 +98,12 @@ const ComicCard = ({
         navigate(`/details/${comicId}`);
     }, [comicId, navigate, isAuthenticated]);
 
+    // Función para manejar el click en el botón de editar
+    const handleEditClick = (() => {
+        // Navegación a la vista correspondiente
+        navigate(`/update-comic/${comicId}`);
+    });
+
     const comicData = comic?.comic || comic;
     if (!comicData) return null;
 
@@ -138,19 +145,34 @@ const ComicCard = ({
                 <p className="edition-text">Edición: {comicData.edition}</p>
                 <p className="price-text">${comicData.price} MXN</p>
             </div>
-
-            {/* Botón para ver detalles del cómic */}
-            <div className="btn-details-div">
-                <Button 
-                    className="btn-secondary" 
-                    onClick={handleDetailsClick}
-                >
-                    Detalles
-                    <span>
-                        <img src={detailsIcon} className='button-img' alt="..." />
-                    </span>
-                </Button>
-            </div>
+                
+            {isMyComicsView ? (
+                <div className="btn-details-div">
+                    {/* Botón para editar el cómic */}
+                    <Button 
+                        className="btn-secondary" 
+                        onClick={handleEditClick}
+                    >
+                        Editar
+                        <span>
+                            <img src={editIcon} className='button-img' alt="..." />
+                        </span>
+                    </Button>
+                </div>
+            ) : (
+                <div className="btn-details-div">
+                    {/* Botón para ver detalles del cómic */}
+                    <Button 
+                        className="btn-secondary" 
+                        onClick={handleDetailsClick}
+                    >
+                        Detalles
+                        <span>
+                            <img src={detailsIcon} className='button-img' alt="..." />
+                        </span>
+                    </Button>
+                </div>
+            )}
 
             {/* Botón de eliminar en la wishlist */}
             {isWishListView && (

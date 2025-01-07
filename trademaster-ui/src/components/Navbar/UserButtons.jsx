@@ -15,7 +15,11 @@ import PublishComicModal from "../Modals/PublishComicModal";
 import defaultImage from "../../images/default-user.jpg";
 import plusIcon from "../../images/add.png";
 
-const UserButtons = ({ handleLogout }) => {
+const UserButtons = ({ 
+  handleLogout,
+  isEditUserView = false,
+  isEditComicView = false
+}) => {
 
   const navigate = useNavigate(); // Hook para manejar la navegación
   
@@ -60,16 +64,22 @@ const UserButtons = ({ handleLogout }) => {
   return (
 
     <div className="user-buttons navbar-buttons">
-      {/* Botón de Publicar cómic */}
-      <button className="btn" onClick={() => {
-        setShowPublish(true);
-        setShowUserDropdown(false);
-      }}>
-        Publicar cómic
-        <span>
-          <img src={plusIcon} alt="..." className="button-img" />
-        </span>
-      </button>
+      {(isEditUserView || isEditComicView) ? (
+        <></>
+      ) : (
+        <>
+          {/* Botón de Publicar cómic */}
+          <button className="btn" onClick={() => {
+            setShowPublish(true);
+            setShowUserDropdown(false);
+          }}>
+            Publicar cómic
+            <span>
+              <img src={plusIcon} alt="..." className="button-img" />
+            </span>
+          </button>
+        </>
+      )}
 
       {/* Botón del Usuario */}
       <Dropdown id="dropdown-user" show={showUserDropdown} align="end">

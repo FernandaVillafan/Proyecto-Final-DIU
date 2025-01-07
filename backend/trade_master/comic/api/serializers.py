@@ -16,6 +16,31 @@ class ComicSerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user'):
             validated_data['seller'] = request.user
         return super().create(validated_data)
+    
+"""
+    Serializador para actualizar los datos de un cómic
+"""
+class UpdateComicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comic
+        fields = ['title', 'publisher', 'edition', 'condition', 'description', 'price', 'image', 'category']
+        extra_kwargs = {
+            'title': {'required': False},
+            'publisher': {'required': False},
+            'edition': {'required': False},
+            'condition': {'required': False},
+            'description': {'required': False},
+            'price': {'required': False},
+            'image': {'required': False},
+            'category': {'required': False},
+        }
+        
+        def validate(self, data):
+            # Solo validamos los campos que viene en la petición
+            for field_name, value in data.items():
+                if not value or str(value).strip() == "":
+                    raise serializers.ValidationError(f"El campo {field_name} no puede estar vacío")
+            return data
         
 """
     Serializador para el modelo WishList
