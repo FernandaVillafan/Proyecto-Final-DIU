@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -13,17 +14,28 @@ class User(AbstractBaseUser , PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True, null=False)
     password = models.CharField(max_length=255, null=False)
     phone = models.CharField(max_length=255, null=True)
+    image = models.ImageField(upload_to=settings.USER_IMAGES_PATH, blank=True, null=True)
+    trades_count = models.IntegerField(default=0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
       
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'name', 'last_name']
-    
-    def __str__(self):
-        return f"id: {self.id}, name: {self.name}, last_name: {self.last_name}, username: {self.username}, email: {self.email}"
+    REQUIRED_FIELDS = ['name', 'last_name', 'email', 'password', 'phone']
     
     class Meta:
         indexes = [
             models.Index(fields=['username', 'email']),
         ]
+    
+    def __str__(self):
+        return f"""id: {self.id}, 
+                 name: {self.name}, 
+                 last_name: {self.last_name}, 
+                 username: {self.username}, 
+                 email: {self.email}, 
+                 phone: {self.phone},
+                 image: {self.image},
+                 trades_count: {self.trades_count},
+                 rating: {self.rating}"""
         
     def to_dict(self):
         return {
@@ -32,6 +44,7 @@ class User(AbstractBaseUser , PermissionsMixin):
             'last_name': self.last_name,
             'username': self.username,
             'email': self.email,
+            'phone': self.phone,
         }
         
     def login_info(self):

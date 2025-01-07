@@ -1,159 +1,171 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import axios from 'axios';
 
 // Importamos el archivo CSS
 import './PublishComicModal.css';
+
+// Importamos el contexto
+import { useComics } from '../../context/ComicsContext';
 
 // Importamos el archivo para los mensajes (alert)
 import swalMessages from '../../services/SwalMessages';
 
 // Importamos los íconos (imágenes png)
 import priceIcon from '../../images/money.png';
-import closeIcon from '../../images/close.png';
 import uploadIcon from '../../images/upload.png';
 
-const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
+const PublishComicModal = ({ show, handleClose }) => {
 
-    // Estados para el nuevo cómic
-    const newComicState = {
+    // Obtenemos la información del contexto
+    const { createComic } = useComics();
+
+    // Estado para el nuevo cómic
+    const [newComic, setNewComic] = useState({
         title: "",
         publisher: "",
         edition: "",
         condition: "",
         description: "",
         price: "",
-        image: null,
+        image: [],
         category: "",
-    };
-    const [newComic, setNewComic] = useState(newComicState);
+    });
+    
+    // Para prevenir múltiples envíos
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Función para manejar el formulario
-    const handleInputChange = (e) => {
+    const handleInputChange = useCallback((e) => {
         const { name, value } = e.target;
-        setNewComic({
-            ...newComic,
+        setNewComic(prevState => ({
+            ...prevState,
             [name]: value,
-        });
-    };
+        }));
+    }, []);
 
     // Función para manejar las fotos
-    const handleImageUpload = (e) => {
+    const handleImageUpload = useCallback((e) => {
         const file = e.target.files[0];
+        if (file) {
+            setNewComic(prevState => ({
+                ...prevState,
+                image: file
+            })); 
+        }
+    }, []);
+
+    // Función para resetear los campos del formulario
+    const resetForm = () => {
         setNewComic({
-            ...newComic,
-            image: file
+            title: "",
+            publisher: "",
+            edition: "",
+            condition: "",
+            description: "",
+            price: "",
+            image: [],
+            category: "",
         });
     };
 
     // Función para manejar el cierre del modal
-    const handleModalClose = () => {
-        setNewComic(newComicState);
-
+    const handleModalClose = useCallback(() => {
+        setIsSubmitting(false);
+        handleClose();
+        resetForm();
         // También reseteamos el input de tipo file
         const fileInput = document.getElementById('photo-upload');
         if (fileInput) {
             fileInput.value = '';
         }
+    }, [handleClose]);
 
-        handleClose();
-    };
+    // Función para validar el formulario
+    const validateForm = useCallback(() => {
+        const requiredFields = [
+            'title', 
+            'publisher', 
+            'edition', 
+            'condition', 
+            'description', 
+            'price', 
+            'image', 
+            'category'
+        ];
+        const emptyFields = requiredFields.filter(field => !newComic[field]);
+        // Si falta llenar algún campo o la imagen
+        if (emptyFields.length > 0 || !newComic.image) {
+            swalMessages.errorMessage("Por favor, completa todos los campos requeridos");
+            return false;
+        } 
+        // Si el formato de la imagen no es válido
+        if (!(newComic.image instanceof File)) {
+            swalMessages.errorMessage("Por favor, selecciona una imagen válida");
+            return false;
+        }
+        // Validamos que el precio sea mayor a 0
+        if (parseFloat(newComic.price) <= 0) {
+            swalMessages.errorMessage("El precio debe ser mayor a 0");
+            return false;
+        }
+
+        return true;
+    }, [newComic]);
 
     // Función para publicar el nuevo cómic
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
+        if (isSubmitting) return;
 
-        const token = localStorage.getItem("access_token");
+        if (!validateForm()) return;
 
-        if (!token) return;
-
-        // Validación de los campos requeridos
-        if (
-            !newComic.title || 
-            !newComic.publisher || 
-            !newComic.edition || 
-            !newComic.condition || 
-            !newComic.description ||
-            !newComic.price || 
-            !newComic.image ||
-            !newComic.category
-        ) {
-            swalMessages.errorMessage("Por favor, completa todos los campos requeridos");
-            return;
-        }
+        setIsSubmitting(true);
 
         try {
-            const formData = new FormData();
-
-            formData.append("title", newComic.title);
-            formData.append("publisher", newComic.publisher);
-            formData.append("edition", newComic.edition);
-            formData.append("condition", newComic.condition);
-            formData.append("description", newComic.description);
-            formData.append("price", parseFloat(newComic.price));
-            formData.append("image", newComic.image);
-            formData.append("category", newComic.category);
-
-            // Realizamos la solicitud POST al endpoint de crear comic
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/comics/create/`, 
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            // Verificamos que la respuesta sea exitosa
-            if ((response.status === 201 || response.status === 200) && response.data) {
-                // Mostramos un mensaje de éxito
-                swalMessages.successMessage("Tu comic ha sido publicado exitosamente");
-                if (onComicPublished) {
-                    onComicPublished();
-                }
-                // Cerramos el modal
-                handleModalClose();
-            } else {
-                swalMessages.errorMessage("Hubo un problema al publicar el comic");
-            }
+            // Realizamos la solicitud POST al endpoint de crear cómic
+            const response = await createComic(newComic);
+            // Mostramos un mensaje de éxito
+            swalMessages.successMessage(response?.data?.message || response?.message);
+            // Cerramos el modal
+            handleModalClose();
         } catch (error) {
-            swalMessages.errorMessage("No se pudo publicar el comic<br>Por favor, inténtalo nuevamente");
+            swalMessages.errorMessage(error.response?.data?.message);
             console.error('Error en handleSubmit: ', error);
+        } finally {
+            setIsSubmitting(false);
         }
-    };
+    }, [isSubmitting, newComic, validateForm, createComic, handleModalClose]);
 
     return (
         
         <Modal show={show} onHide={handleModalClose} centered>
-            <Modal.Header className='border-0'>
+            <Modal.Header closeButton={!isSubmitting} className='border-0'>
                 {/* Título del modal */}
-                <Modal.Title>Nuevo Comic</Modal.Title>
-                {/* Botón para cerrar el modal */}
-                <span className='span-btn-close-publish' onClick={handleModalClose}>
-                    <img src={closeIcon} className='btn-close' alt="..." />
-                </span>
+                <Modal.Title>Nuevo Cómic</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
-                <Form className='publish-form'>
+            <Modal.Body className='publish-modal-body'>
+                <Form className='publish-form' onSubmit={(e) => e.preventDefault()}>
                     <div className='form-group-div'>
                         {/* Título del cómic */}
                         <Form.Group className="publish-form-group">
-                            <Form.Label>Título del comic <span className="span-red">*</span></Form.Label>
+                            <Form.Label>Título del cómic <span className="span-red">*</span></Form.Label>
 
                             <Form.Control
+                                id="title"
                                 type="text"
                                 name="title"
                                 value={newComic.title}
                                 onChange={handleInputChange}
-                                placeholder="Nombre del comic..."
+                                placeholder="Nombre del cómic..."
                             />
                         </Form.Group>
 
-                        {/* Categoría del comic */}
+                        {/* Categoría del cómic */}
                         <Form.Group className='publish-form-group'>
                             <Form.Label>Categoría <span className="span-red">*</span></Form.Label>
 
                             <Form.Select
+                                id="category"
                                 name="category"
                                 value={newComic.category}
                                 onChange={handleInputChange}
@@ -175,6 +187,7 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                             <Form.Label>Editorial <span className="span-red">*</span></Form.Label>
 
                             <Form.Control
+                                id="publisher"
                                 type="text"
                                 name="publisher"
                                 value={newComic.publisher}
@@ -188,6 +201,7 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                             <Form.Label>Edición <span className="span-red">*</span></Form.Label>
 
                             <Form.Control
+                                id="edition"
                                 type="text"
                                 name="edition"
                                 value={newComic.edition}
@@ -198,11 +212,12 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                     </div>
 
                     <div className='form-group-div'>
-                        {/* Estado del comic */}
+                        {/* Estado del cómic */}
                         <Form.Group className='publish-form-group'>
                             <Form.Label>Estado <span className="span-red">*</span></Form.Label>
                             
                             <Form.Select
+                                id="condition"
                                 name="condition"
                                 value={newComic.condition}
                                 onChange={handleInputChange}
@@ -216,19 +231,19 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                             </Form.Select>
                         </Form.Group>
                         
-                        {/* Precio del comic */}
+                        {/* Precio del cómic */}
                         <Form.Group className='publish-form-group'>
                             <Form.Label>Precio <span className="span-red">*</span></Form.Label>
 
-                            <div className="input-group">
+                            <div className="input-group price-div">
                                 <span className="input-group-text" id="price-addon">
                                     <img src={priceIcon} alt="..." className="input-icon" />
                                 </span>
 
                                 <Form.Control
+                                    id="price"
                                     type="number"
                                     name="price"
-                                    className="form-control rounded-input"
                                     value={newComic.price}
                                     onChange={handleInputChange}
                                     placeholder="0.00"
@@ -238,21 +253,22 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                         </Form.Group>
                     </div>
 
-                    {/* Descripción del comic */}
+                    {/* Descripción del cómic */}
                     <Form.Group className="mb-3">
                         <Form.Label>Descripción <span className="span-red">*</span></Form.Label>
                         
                         <Form.Control
+                            id="description"
                             as="textarea"
                             rows={1}
                             name="description"
                             value={newComic.description}
                             onChange={handleInputChange}
-                            placeholder="Describe el comic..."
+                            placeholder="Describe el cómic..."
                         />
                     </Form.Group>
 
-                    {/* Imagen del comic */}
+                    {/* Imagen del cómic */}
                     <Form.Group className="mb-3">
                         <Form.Label>Foto(s) <span className="span-red">*</span></Form.Label>
 
@@ -261,8 +277,9 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                                 htmlFor="photo-upload"
                             >
                                 <img src={uploadIcon} alt="..." className='label-icon' />
-                                Subir foto
+                                Subir fotos
                             </label>
+
                             <input
                                 type="file"
                                 accept="image/*"
@@ -270,19 +287,21 @@ const PublishComicModal = ({ show, handleClose, onComicPublished }) => {
                                 className="d-none"
                                 id="photo-upload"
                             />
+                            
                             <span>
-                                {newComic.image ? newComic.image.name : 'Ninguna foto seleccionada'}
+                                {newComic.image.length !== 0 ? newComic.image.name : 'Ninguna foto seleccionada'}
                             </span>
                         </div>
                     </Form.Group>
                 </Form>
-            </Modal.Body>
 
-            <Modal.Footer>
-                <Button variant="primary" className="btn-primary" onClick={handleSubmit}>
-                    Publicar
-                </Button>
-            </Modal.Footer>
+                {/* Botón para publicar el cómic */}
+                <div className='d-flex justify-content-center publish-modal-btn'>
+                    <Button className="btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? 'Publicando...' : 'Publicar'}
+                    </Button>
+                </div>
+            </Modal.Body>
         </Modal>
     );
 };

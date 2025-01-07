@@ -6,8 +6,14 @@ import { setSearchTerm } from "../../redux/searchSlice";
 // Importamos el archivo CSS
 import "./Navbar.css";
 
-// Importamos la autenticación
+// Importamos el contexto
 import { AuthContext } from "../../context/AuthContext";
+import { useUser } from "../../context/UserContext";
+
+// Importamos los componentes necesarios
+import LoginModal from "../Modals/LoginModal";
+import SignUpModal from "../Modals/SignUpModal";
+import UserButtons from "./UserButtons";
 
 // Importamos los íconos (imágenes png)
 import logo from "../../images/Logo.png";
@@ -16,34 +22,43 @@ import loginIcon from "../../images/login.png";
 import searchIcon from "../../images/search.png";
 import comicsIcon from "../../images/book.png";
 
-// Importamos los componentes necesarios
-import LoginModal from "../Modals/LoginModal";
-import SignUpModal from "../Modals/SignUpModal";
-import UserButtons from "./UserButtons";
+const Navbar = ({ alternativeIcon, alternativeTitle }) => {
 
-const Navbar = ({ onComicPublished, alternativeTitle }) => {
-  // Search bar handlers
+  // Datos y funciones obtenidos de los contextos
+  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { userData, updateUserData } = useUser();
+
+  const navigate = useNavigate(); // Hook para manejar la navegación
+
+  // Estados para los modales de Login y Registro
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+
+  // Estados para el scroll del navbar
+  const [visible, setVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+
+  // Manejadores para la barra de búsqueda
   const dispatch = useDispatch();
   const searchTerm = useSelector((state) => state.search.searchTerm);
-
   const handleSearchChange = (e) => {
     dispatch(setSearchTerm(e.target.value));
   };
 
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  // Función para cerrar la sesión
+  const handleLogout = () => {
+    const keysToRemove = [
+      'access_token',
+      process.env.REACT_APP_USER_NOTIFICATIONS_OBJECT_NAME,
+      'userData'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    updateUserData(null);
+    navigate("/");
+    logout();
+  };
 
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const handleCloseLogin = () => setShowLogin(false);
-  const handleShowLogin = () => setShowLogin(true);
-
-  const handleCloseSignin = () => setShowSignUp(false);
-  const handleShowSignUp = () => setShowSignUp(true);
-
-  const [visible, setVisible] = useState(true);
-  const [prevScrollPos, setPrevScrollPos] = useState(0);
-
+  // Función para manejar el scroll del navbar
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
@@ -52,50 +67,49 @@ const Navbar = ({ onComicPublished, alternativeTitle }) => {
       setVisible(isVisible);
       setPrevScrollPos(currentScrollPos);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem(
-      process.env.REACT_APP_USER_NOTIFICATIONS_OBJECT_NAME
-    );
-    navigate("/");
-    logout();
-  };
-
   return (
+    
     <>
       {!isAuthenticated ? (
         <nav className={`navbar-container ${visible ? "" : "navbar-hidden"}`}>
+          {/* Primer navbar (principal) */}
           <div className="navbar-no-auth">
+            {/* Logo de la página */}
             <div className="navbar-logo">
               <a href="/">
                 <img src={logo} alt="..." className="logo" />
               </a>
             </div>
+
+            {/* Barra de búsqueda */}
             <div className="search-container">
               <input
                 type="text"
-                placeholder="Busca tu comic preferido..."
+                placeholder="Busca tu cómic preferido...."
                 className="search-input"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
+
               <button className="search-button">
-                <img src={searchIcon} alt="Buscar" />
+                <img src={searchIcon} alt="..." />
               </button>
             </div>
+
+            {/* Botones de Iniciar sesión y Registro */}
             <div className="navbar-buttons">
-              <button className="btn" onClick={handleShowSignUp}>
+              <button className="btn" onClick={() => setShowSignUp(true)}>
                 Registrarse
                 <span>
                   <img src={registerIcon} className="button-img" alt="..." />
                 </span>
               </button>
-              <button className="btn" onClick={handleShowLogin}>
+
+              <button className="btn" onClick={() => setShowLogin(true)}>
                 Iniciar sesión
                 <span>
                   <img src={loginIcon} className="button-img" alt="..." />
@@ -105,44 +119,48 @@ const Navbar = ({ onComicPublished, alternativeTitle }) => {
           </div>
         </nav>
       ) : (
-        <nav
-          className={`navbar-container navbar-auth ${
-            visible ? "" : "navbar-hidden"
-          }`}
-        >
+        <nav className={`navbar-container navbar-auth ${visible ? "" : "navbar-hidden"}`}>
+          {/* Segundo navbar para los cómics */}
           <>
             <span className="comics-span">
-              <img src={comicsIcon} className="comics-icon" alt="..." />
-              {alternativeTitle ? alternativeTitle : "Comics Recién Agregados"}
+              <img src={alternativeIcon ? alternativeIcon : comicsIcon} className="comics-icon" alt="..." />
+              {alternativeTitle ? alternativeTitle : "Cómics Recién Agregados"}
             </span>
           </>
+          
+          {/* Barra de búsqueda */}
           <div className="search-container">
             <input
               type="text"
-              placeholder="Busca tu comic preferido..."
+              placeholder="Busca tu cómic preferido...."
               className="search-input"
               value={searchTerm}
               onChange={handleSearchChange}
             />
+
             <button className="search-button">
-              <img src={searchIcon} alt="Buscar" />
+              <img src={searchIcon} alt="..." />
             </button>
           </div>
 
+          {/* Botón del usuario loggueado */}
           <UserButtons
+            userData={userData}
             handleLogout={handleLogout}
-            onComicPublished={onComicPublished}
           />
         </nav>
       )}
+      
+      {/* Modales de Iniciar sesión y Registro */}
       <SignUpModal
         show={showSignUp}
-        handleClose={handleCloseSignin}
+        handleClose={() => setShowSignUp(false)}
         setShowLogin={setShowLogin}
       />
+      
       <LoginModal
         show={showLogin}
-        handleClose={handleCloseLogin}
+        handleClose={() => setShowLogin(false)}
         setShowSignUp={setShowSignUp}
       />
     </>

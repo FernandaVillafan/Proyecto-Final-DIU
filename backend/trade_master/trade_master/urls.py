@@ -23,4 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('user.api.urls')),
     path('api/', include('comic.api.urls')),
-] + static(settings.COMIC_IMAGES_URL, document_root=settings.COMIC_IMAGES_ROOT)
+]
+
+# Agregamos la configuración de medios solo en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

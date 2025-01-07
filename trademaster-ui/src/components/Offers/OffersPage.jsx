@@ -1,150 +1,136 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // To handle navigation
-import "./OffersPage.css"; // CSS styles
-import Navbar from "../Navbar/Navbar"; // Import your NavBar component
+import React, { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+
+// Importamos el archivo CSS
+import "./OffersPage.css"; 
+
+// Importamos el contexto
+import { useOffers } from "../../context/OffersContext";
+
+// Importamos el archivo para los mensajes (alert)
+import swalMessages from '../../services/SwalMessages';
+
+// Importamos los componentes necesarios
+import Navbar from "../Navbar/Navbar";
+
+// Importamos los íconos (imágenes png)
 import backIcon from "../../images/back.png";
-import axios from "axios";
+import offerIcon from "../../images/trade.png";
+import defaultImage from "../../images/default-trade.jpeg";
+import dateIcon from "../../images/calendar.png";
 
 const OffersPage = () => {
+
+  const navigate = useNavigate(); // Hook para manejar la navegación
+
+  // Estado para manejar los dos tipos de ofertas (enviadas y recibidas)
   const [activeTab, setActiveTab] = useState("received");
-  const [receivedOffers, setReceivedOffers] = useState([]);
-  const [sentOffers, setSentOffers] = useState([]);
-  const navigate = useNavigate(); // Navigation hook
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Obtenemos los datos del contexto
+  const { receivedOffers, sentOffers, updateOfferStatus } = useOffers();
 
-  // Fetch offers from the API
-  const fetchOffers = async () => {
+  // Función para manejar el estatus de una oferta
+  const handleStatusUpdate = useCallback(async (offerId, status) => {
     try {
-      setIsLoading(true);
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        return;
-      }
-
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/comics/trade-offers/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const { trade_offers_as_seller, trade_offers_as_trader } =
-        response.data.data;
-      setReceivedOffers(trade_offers_as_seller || []);
-      setSentOffers(trade_offers_as_trader || []);
+      // Realizamos la solicitud al endpoint utilizando el contexto
+      const response = await updateOfferStatus(offerId, status);
+      // Mostramos el mensaje de éxito
+      swalMessages.successMessage(response?.message);
     } catch (error) {
-      console.error("Error fetching offers:", error);
-    } finally {
-      setIsLoading(false);
+      swalMessages.errorMessage(error.response?.data?.message);
     }
-  };
+  }, [updateOfferStatus]);
 
-  // Update the status of an offer
-  const updateOfferStatus = async (offerId, status) => {
-    try {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        return;
-      }
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/comics/trade-offer/update/${offerId}/`,
-        {
-          status,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // Refresh offers after update
-      fetchOffers();
-    } catch (error) {
-      console.error("Error updating offer status:", error);
-    }
-  };
-
-  // Load offers when the component mounts
-  useEffect(() => {
-    fetchOffers();
-  }, []);
-
-  // Render offers based on the active tab
-  const renderOffers = () => {
+  // Función para renderizar las ofertas
+  const renderOffers = useMemo(() => {
     const offers = activeTab === "received" ? receivedOffers : sentOffers;
-
+    // Si no hay ofertas aún
     if (offers.length === 0) {
-      return <p className="no-offers">No hay ofertas disponibles.</p>;
+      return <div className="no-comics-message">No hay ofertas disponibles</div>;
     }
 
     return offers.map((offer) => (
+
       <div key={offer.id} className="offer-card">
-        <img
-          src={offer.comic.image_url || "placeholder_image_url"}
-          alt={offer.comic.title}
-        />
-        <div className="offer-content">
-          <div className="offer-header">
-            <h3>{`Oferta para: ${offer.comic.title}`}</h3>
-            <p>{`De: ${offer.trader.name} ${offer.trader.last_name}`}</p>
+        {/* Imagen de la oferta */}
+        <div className="offer-image-container">
+          <img
+            src={offer.image ? `${process.env.REACT_APP_API_URL}/${offer.image}` : defaultImage}
+            alt="..."
+          />
+        </div>
+
+        {/* Información de la oferta */}
+        <div className="offer-details">
+          <div className="row">
+            {/* Producto del que se quiere ofertar */}
+            <div className="col-md-6 product-container">
+              <span>{`Oferta para: ${offer.comic.title}`}</span>
+              <p>{`De: ${offer.trader.name} ${offer.trader.last_name}`}</p>
+            </div>
+
+            {/* Estatus de la oferta */}
+            <div className="col-md-6 status-container">
+              <span className={`offer-status 
+                ${offer.status === 0 ? "pendiente" 
+                                     : offer.status === 1 ? "aceptada"
+                                                          : "rechazada"}`}>
+                {offer.status === 0 ? "Pendiente"
+                                    : offer.status === 1 ? "Aceptada"
+                                                         : "Rechazada"}
+              </span>
+            </div>
           </div>
-          <div className="offer-body">
-            <p className="offer-title">{offer.title}</p>
-            <p className="offer-description">{offer.description}</p>
-            <p>{`El vendedor es: ${offer.seller.name} ${offer.seller.last_name}`}</p>
+
+          {/* Información de lo que ofrecen en la oferta */}
+          <div className="row">
+            <div className="info-container">
+              <span>{offer.title}</span>
+              <p>{offer.description}</p>
+            </div>
           </div>
-          <div className="offer-footer">
-            <p className="offer-date">
-              <i className="far fa-calendar-alt"></i>{" "}
-              {offer.created_at || "Fecha no disponible"}
-            </p>
-            <span
-              className={`offer-status ${
-                offer.status === 0
-                  ? "pendiente"
-                  : offer.status === 1
-                  ? "aceptada"
-                  : "rechazada"
-              }`}
-            >
-              {offer.status === 0
-                ? "Pendiente"
-                : offer.status === 1
-                ? "Aceptada"
-                : "Rechazada"}
-            </span>
-            {activeTab === "received" && offer.status === 0 && (
-              <div className="offer-actions">
-                <button
-                  className="reject-button"
-                  onClick={() => updateOfferStatus(offer.id, 2)}
-                >
-                  Rechazar
-                </button>
-                <button
-                  className="accept-button"
-                  onClick={() => updateOfferStatus(offer.id, 1)}
-                >
-                  Aceptar
-                </button>
-              </div>
-            )}
+
+          <div className="row align-items-center">
+            <div className="col-md-6 offer-actions">
+              {/* Fecha en la que se hizo la oferta */}
+              <span className="offer-date">
+                <div className="date-icon">
+                  <img src={dateIcon} alt="..." />
+                  {offer.date || "Fecha no disponible"}
+                </div>
+              </span>
+            </div>
+
+            <div className="col-md-6 offer-buttons"> 
+              {/* Botones de Aceptar y Rechazar */}
+              {activeTab === "received" && offer.status === 0 && (
+                <>
+                  <Button className="btn-tertiary" onClick={() => handleStatusUpdate(offer.id, 2)}>
+                    Rechazar
+                  </Button>
+
+                  <Button className="btn-primary" onClick={() => handleStatusUpdate(offer.id, 1)}>
+                    Aceptar
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
     ));
-  };
+  }, [activeTab, receivedOffers, sentOffers, handleStatusUpdate]);
 
   return (
-    <div className="offers-page">
-      {/* Add the NavBar at the top */}
-      <Navbar alternativeTitle="Bandeja de Ofertas" />
+
+    <>
+      {/* Componente Navbar */}
+      <Navbar alternativeIcon={offerIcon} alternativeTitle="Bandeja de Ofertas" />
 
       {/* Botón de 'Volver' */}
-      <div className="btn btn-back2-container">
-        <Button className="btn-back2" onClick={() => navigate("/comics")}>
+      <div className="btn btn-back-container">
+        <Button className="btn-back" onClick={() => navigate(-1)}>
           <span>
             <img src={backIcon} className="btn-back-img" alt="..." />
           </span>
@@ -152,28 +138,30 @@ const OffersPage = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="tabs">
-        <button
-          className={`tab-button ${activeTab === "received" ? "active" : ""}`}
-          onClick={() => setActiveTab("received")}
-        >
-          Recibidas ({receivedOffers.length})
-        </button>
-        <button
-          className={`tab-button ${activeTab === "sent" ? "active" : ""}`}
-          onClick={() => setActiveTab("sent")}
-        >
-          Enviadas ({sentOffers.length})
-        </button>
+      <div className="offers-container">
+        {/* Tabs de Ofertas */}
+        <div className="offer-tabs">
+          {/* Botón de ofertas recibidas */}
+          <Button
+            className={`tab-button ${activeTab === "received" ? "active" : ""}`}
+            onClick={() => setActiveTab("received")}
+          >
+            Recibidas ({receivedOffers.length})
+          </Button>
+
+          {/* Botón de ofertas enviadas */}
+          <Button
+            className={`tab-button ${activeTab === "sent" ? "active" : ""}`}
+            onClick={() => setActiveTab("sent")}
+          >
+            Enviadas ({sentOffers.length})
+          </Button>
+        </div>
+
+        {/* Lista de los cards de ofertas */}
+        <div className="offer-list">{renderOffers}</div>
       </div>
-
-      {/* is loading */}
-      {isLoading && <p className="loading-offers">Cargando...</p>}
-
-      {/* List of offers */}
-      {!isLoading && <div className="offers-list">{renderOffers()}</div>}
-    </div>
+    </>
   );
 };
 

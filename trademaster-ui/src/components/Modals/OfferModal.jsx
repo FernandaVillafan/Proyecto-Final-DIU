@@ -1,146 +1,209 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { Modal, Button, Form } from 'react-bootstrap';
+
+// Importamos el archivo CSS
 import './OfferModal.css';
-import closeIcon from '../../images/close.png';
-import axios from "axios";
-import { useParams } from "react-router-dom";
+
+// Importamos el contexto
+import { useOffers } from '../../context/OffersContext';
+
 // Importamos el archivo para los mensajes (alert)
 import swalMessages from "../../services/SwalMessages";
 
-const OfferModal = ({ show, onClose }) => {
-  const [formData, setFormData] = useState({
-    offerType: '',
-    title: '',
-    description: '',
-    photos: [],
+// Importamos los íconos (imágenes png)
+import uploadIcon from '../../images/upload.png';
+
+const OfferModal = ({ show, handleClose, comicId }) => {
+
+  // Obtenemos los datos del contexto
+  const { createOffer } = useOffers();
+
+  // Estado para una nueva oferta
+  const [newOffer, setNewOffer] = useState({
+    offerType: "",
+    title: "",
+    description: "",
+    image: [],
   });
 
-  const handleChange = (e) => {
+  // Para prevenir múltiples envíos
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Función para manejar el formulario
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setNewOffer(prevState => ({ 
+      ...prevState, 
       [name]: value,
-    });
-  };
+    }));
+  }, []);
 
-  const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
-      photos: [...formData.photos, ...e.target.files],
-    });
-  };
-
-  const { comicId } = useParams();
-  const [offer, setOffer] = useState(null);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Oferta enviada:', formData);
-    const postComicOffer = async () => {
-        const token = localStorage.getItem("access_token");
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/comics/trade-offer/create/${comicId}/`,
-                {
-                    'service': formData.offerType,
-                    'title': formData.title,
-                    'description': formData.description
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                }
-            );
-            setOffer(response.data);
-        } catch (error) {
-            console.error("Error al mandar la oferta", error);
-        }
-    };
-    postComicOffer();
-    if(offer?.data?.id){
-        swalMessages.successMessage("Tu oferta ha sido enviada exitosamente");
-        console.log(formData.title);
-        setFormData({
-            offerType: '',
-            title: '',
-            description: '',
-            photos: [],
-          });
-        onClose();
-    }else{
-        swalMessages.errorMessage(
-            "Hubo un error al enviar la oferta<br>Inténtalo más tarde"
-        );
+  // Función para manejar las fotos
+  const handleImageUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewOffer(prevState => ({
+        ...prevState,
+        image: file
+      }));
     }
+  }, []);
+
+  // Función para resetear los campos del formulario
+  const resetForm = () => {
+    setNewOffer({
+      offerType: "",
+      title: "",
+      description: "",
+      image: [],
+    });
   };
 
-  if (!show) return null;
+  // Función para manejar el cierre del modal
+  const handleModalClose = useCallback(() => {
+    setIsSubmitting(false);
+    handleClose();
+    resetForm();
+    // También reseteamos el input de tipo file
+    const fileInput = document.getElementById('photo-upload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }, [handleClose]);
+
+  // Función para validar los campos del formulario
+  const validateForm = useCallback(() => {
+    const requiredFields = [
+      'offerType',
+      'title',
+      'description',
+    ];
+    const emptyFields = requiredFields.filter(field => !newOffer[field]);
+    // Si falta llenar algún campo
+    if (emptyFields.length > 0) {
+      swalMessages.errorMessage("Por favor, completa todos los campos requeridos");
+      return false;
+    }
+    return true;
+  }, [newOffer]);
+
+  // Función para mandar la oferta
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
+
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Realizamos la solicitud POST al endpoint de crear oferta
+      const response = await createOffer(comicId, newOffer);
+      // Mostramos un mensaje de éxito
+      swalMessages.successMessage(response?.message);
+      // Cerramos el modal
+      handleModalClose();
+    } catch (error) {
+      swalMessages.errorMessage(error.response?.data?.message);
+      console.error('Error en handleSubmit: ', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, newOffer, validateForm, handleModalClose, createOffer, comicId]);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h1>Trueque</h1>
-          <button className="close-button" onClick={onClose}>
-            <img src={closeIcon} alt="" />
-          </button>
+
+    <Modal show={show} onHide={handleModalClose} centered>
+      <Modal.Header closeButton={!isSubmitting} className='border-0'>
+        {/* Título del modal */}
+        <Modal.Title>Trueque</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body className='publish-modal-body'>
+        <Form className='trade-form' onSubmit={(e) => e.preventDefault()}>
+          <>
+            {/* Qué ofreces a cambio */}
+            <Form.Group className='trade-form-group'>
+              <Form.Label>¿Qué ofreces a cambio? <span className="span-red">*</span></Form.Label>
+
+              <Form.Select
+                id="offerType"
+                name="offerType"
+                value={newOffer.offerType}
+                onChange={handleInputChange}
+              >
+                <option value="" disabled>
+                  Selecciona una opción...
+                </option>
+                <option value="servicio">Servicio</option>
+                <option value="producto">Producto</option>
+              </Form.Select>
+            </Form.Group>
+
+            {/* Título de la oferta */}
+            <Form.Group className="trade-form-group">
+              <Form.Label>Título de la oferta <span className="span-red">*</span></Form.Label>
+
+              <Form.Control
+                id="title"
+                type="text"
+                name="title"
+                value={newOffer.title}
+                onChange={handleInputChange}
+                placeholder="Ejemplo: Nintendo Switch, Bicicleta..."
+              />
+            </Form.Group>
+
+            {/* Descripción de la oferta */}
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción <span className="span-red">*</span></Form.Label>
+                
+              <Form.Control
+                id="description"
+                as="textarea"
+                rows={1}
+                name="description"
+                value={newOffer.description}
+                onChange={handleInputChange}
+                placeholder="Describe lo que ofreces..."
+              />
+            </Form.Group>
+
+            {/* Imágenes de la oferta (opcionales) */}
+            <Form.Group className="mb-3">
+              <Form.Label>Fotos (opcional)</Form.Label>
+
+              <div className="image-upload-div">
+                <label 
+                  htmlFor="photo-upload"
+                >
+                  <img src={uploadIcon} alt="..." className='label-icon' />
+                  Subir fotos
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="d-none"
+                  id="photo-upload"
+                />
+                    
+                <span>
+                  {newOffer.image.length !== 0 ? newOffer.image.name : 'Ninguna foto seleccionada'}
+                </span>
+              </div>
+            </Form.Group>
+          </>
+        </Form>
+        
+        {/* Botón para envíar la propuesta */}
+        <div className='d-flex justify-content-center publish-modal-btn'>
+          <Button className="btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Enviando...' : 'Enviar propuesta'}
+          </Button>
         </div>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="offerType">¿Qué ofreces a cambio? <span className="span-red">*</span></label>
-            <select
-              id="offerType"
-              name="offerType"
-              value={formData.offerType}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecciona una opción...</option>
-              <option value="Servicio">Servicio</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="title">Título de la oferta <span className="span-red">*</span></label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Ej: Nintendo Switch, Bicicleta"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Descripción <span className="span-red">*</span></label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Describe lo que ofreces..."
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="photos">Fotos (opcional)</label>
-            <input
-              type="file"
-              id="photos"
-              name="photos"
-              multiple
-              onChange={handleFileChange}
-            />
-          </div>
-          <div className='modal-footer'>
-            <button type="submit" className="submit-button">Enviar propuesta</button>
-          </div>
-
-        </form>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 };
 

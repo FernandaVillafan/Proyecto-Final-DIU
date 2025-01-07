@@ -8,6 +8,7 @@ import "./LoginModal.css";
 
 // Importamos la autenticación
 import { AuthContext } from "../../context/AuthContext";
+import { useUser } from '../../context/UserContext';
 
 // Importamos el archivo para los mensajes (alert)
 import swalMessages from "../../services/SwalMessages";
@@ -15,45 +16,31 @@ import swalMessages from "../../services/SwalMessages";
 // Importamos los íconos (imágenes png)
 import userIcon from "../../images/user.png";
 import passwordIcon from "../../images/password.png";
-import closeIcon from "../../images/close.png";
 
 const LoginModal = ({ show, handleClose, setShowSignUp }) => {
+
+  // Obtenemos los datos y la función de los contextos
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const { updateUserData } = useUser();
+
+  const navigate = useNavigate(); // Hook para manejar la navegación
 
   // Estados de los datos en el modal
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  // Función para cerrar el modal de login y abrir el de signup
-  const openSignupModal = () => {
-    handleClose(); // Cierra el modal de login
-    setShowSignUp(true); // Abre el modal de signup
-  };
 
   // Función para manejar el envío del formulario de inicio de sesión
   const handleSubmit = async (event) => {
     event.preventDefault(); // Previene el envío del formulario por defecto
 
     try {
-      setIsLoading(true); // Cambia el estado de isLoading a true
-      console.log("Submit login");
-      console.log("username:", username);
-      console.log("password:", password);
-
-      // Se hace una solicitud POST para el endpoint de login
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/user/login/`,
-        {
-          username: username,
-          password: password,
-        }
-      );
+      // Realizamos la solicitud POST al endpoint de login
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/user/login/`, {
+        username: username,
+        password: password,
+      });
 
       const { access } = response.data; // Extraemos el access token de la respuesta
-
-      console.log("Login exitoso:", access);
 
       // Almacenamos el access token en localStorage
       localStorage.setItem("access_token", access);
@@ -61,37 +48,42 @@ const LoginModal = ({ show, handleClose, setShowSignUp }) => {
       // Actualizamos el estado de la autenticación global usando la función login
       login(access);
 
+      // Obtenemos los datos del usuario y actualizamos el contexto
+      const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/`,
+        {
+          headers: {
+            Authorization: `Bearer ${access}`,
+          },
+        }
+      );
+      updateUserData(userResponse.data.data);
+
       // Limpiamos los campos del formulario y cerramos el modal
       setUsername("");
       setPassword("");
       handleClose();
-
+      // Navegación a la siguiente vista
       navigate("/comics");
     } catch (error) {
-      swalMessages.errorMessage(
-        "Credenciales incorrectas<br>Inténtalo nuevamente"
-      );
-      console.error("Error en handleSubmit: ", error);
+      swalMessages.errorMessage(error.response?.data?.message);
+      console.error('Error en handleSubmit: ', error);
     }
   };
 
   // Función para manejar el cerrar el modal
   const handleCloseModal = () => {
-    handleClose(); // Cierra el modal
+    handleClose(); // Cerramos el modal
     // Limpiamos las entradas al cerrar el modal
     setUsername("");
     setPassword("");
   };
 
   return (
+
     <Modal show={show} onHide={handleCloseModal} centered>
-      <Modal.Header className="border-0">
+      <Modal.Header closeButton className="border-0">
         {/* Título del modal */}
         <Modal.Title>Ingresar</Modal.Title>
-        {/* Botón para cerrar el modal */}
-        <span className="span-btn-close" onClick={handleCloseModal}>
-          <img src={closeIcon} className="btn-close" alt="..." />
-        </span>
       </Modal.Header>
 
       <Modal.Body>
@@ -131,17 +123,11 @@ const LoginModal = ({ show, handleClose, setShowSignUp }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={8}
             />
           </div>
 
           {/* Botón para iniciar sesión */}
-          <Button
-            type="submit"
-            className="btn-primary"
-            variant="primary"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="btn-primary">
             Iniciar sesión
           </Button>
         </form>
@@ -154,7 +140,10 @@ const LoginModal = ({ show, handleClose, setShowSignUp }) => {
           <span
             className="text-primary text-decoration-none"
             style={{ cursor: "pointer" }}
-            onClick={openSignupModal}
+            onClick={() => {
+              handleCloseModal();
+              setShowSignUp(true);
+            }}
           >
             Regístrate
           </span>

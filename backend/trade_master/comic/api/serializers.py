@@ -6,9 +6,16 @@ from user.api.serializers import UserShortSerializer
     Serializador para el modelo Comic
 """
 class ComicSerializer(serializers.ModelSerializer):
+    seller = UserShortSerializer(read_only=True)
     class Meta:
         model = Comic
         fields = '__all__'
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['seller'] = request.user
+        return super().create(validated_data)
         
 """
     Serializador para el modelo WishList
@@ -47,4 +54,3 @@ class TradeOfferDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeOffer
         fields = '__all__'
-        

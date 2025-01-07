@@ -1,13 +1,17 @@
-.span-btn-close-signup {
-    margin-left: 56% !important;
-}
-
 #name,
-#lastname,
+#last_name,
 #email,
 #password,
-#confirmPassword,
+#confirm_password,
 #phone,
 #username {
     border: 2px solid #DADADA !important;
+}
+
+.input-group:first-child {
+    margin-top: 15px;
+}
+
+.input-group:last-of-type {
+    padding-bottom: 15px;
 }

@@ -1,14 +1,11 @@
-.span-btn-close-publish {
-    margin-left: 60% !important;
-}
-
-.publish-form {
-    padding: 0rem 1rem;
+.publish-modal-body {
+    margin: 20px 30px 0px 30px;
 }
 
 .form-group-div {
     display: flex;
-    gap: 20px;
+    gap: 30px;
+    margin-bottom: 10px;
 }
 
 .publish-form-group {
@@ -16,6 +13,30 @@
     flex: 1;
     flex-direction: column;
     justify-content: center;
+}
+
+.form-label {
+    margin-bottom: 0 !important;
+}
+
+#title,
+#category,
+#publisher,
+#edition,
+#condition,
+#description {
+    border: 2px solid #DADADA !important;
+    border-radius: 30px !important;
+}
+
+.price-div {
+    padding-bottom: 0 !important;
+}
+
+#price {
+    border: 2px solid #DADADA !important;
+    border-radius: 0px 30px 30px 0px !important;
+    padding: 9px 12px !important;
 }
 
 .publish-form-group select {
@@ -26,7 +47,7 @@
 
 .image-upload-div {
     align-items: center;
-    border: 2px dashed rgb(0, 135, 94, 0.4) !important;
+    border: 2px dashed #DADADA !important;
     border-radius: var(--radius-button);
     display: flex;
     flex-direction: column;
@@ -56,6 +77,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.publish-modal-btn {
+    padding: 10px 0px;
 }
 
 .span-red {

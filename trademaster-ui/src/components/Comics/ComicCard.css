@@ -60,7 +60,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding: 1rem 0;
+    padding: 15px 5px;
 }
 
 .title-text {
@@ -82,18 +82,11 @@
     margin-left: 1rem;
 }
 
-.btn-details-div {
-    display: flex;
-    justify-content: center;
-    margin-top: auto;
-    padding: 0 1rem 1rem 1rem;
-    width: 100%;
-}
-
+.btn-details-div,
 .btn-delete-div {
     display: flex;
     justify-content: center;
     margin-top: auto;
-    padding: 0 1rem 1rem 1rem;
+    padding: 0 2rem 1rem 2rem;
     width: 100%;
 }

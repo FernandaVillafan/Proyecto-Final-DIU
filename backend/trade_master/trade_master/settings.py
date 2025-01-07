@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'corsheaders',
     'user',
     'comic',
@@ -74,7 +75,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# TO-DO Documentar
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),  # Duración del access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # Duración del refresh token (si lo usas)
@@ -83,7 +83,6 @@ SIMPLE_JWT = {
     # Otras configuraciones...
 }
 
-# TO-DO Documentar
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -132,6 +131,7 @@ DATABASES = {
     'PORT': getenv('PGPORT', 5432),
     'OPTIONS': {
       'sslmode': 'require',
+      'options': 'endpoint=ep-sweet-cake-a5c95qsf',
     },
   }
 }
@@ -179,5 +179,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # settings.py
-COMIC_IMAGES_URL = '/comic_images/'
-COMIC_IMAGES_ROOT = os.path.join(BASE_DIR, 'comic_images')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Subdirectorios dentro de MEDIA_ROOT
+USER_IMAGES_PATH = 'user_images'
+COMIC_IMAGES_PATH = 'comic_images'
+TRADE_IMAGES_PATH = 'trade_images'

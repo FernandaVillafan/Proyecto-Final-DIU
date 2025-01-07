@@ -1,50 +1,60 @@
-.dropdown-wrapper {
-  cursor: pointer;
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer; 
   display: flex;
-  justify-content: center;
+  padding: 0 15px;
   position: relative;
 }
 
-.icon-user {
-  cursor: pointer;
-  height: auto;
-  margin-left: 5px;
-  width: 40px;
+.icon-img {
+  border-radius: 50%;
+  height: 40px !important;
+  width: auto !important;
 }
 
-.dropdown-menu {
+.icon-user {
+  border-radius: 50%;
+  height: 35px !important;
+  width: 40px !important;
+}
+
+/* Estilos para el dropdown de botones del usuario */
+.dropdown-toggle::after {
+  display: none;
+}
+
+.icon-img {
+  border-radius: 1000%;
+  height: 35px;
+  width: auto;
+}
+
+#dropdown-user-menu {
   background-color: var(--dark-blue);
   border-radius: var(--radius-card);
-  margin-top: 5px;
-  min-width: 180px;
-  padding: 0.5rem 0;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 1000;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 2px 15px 10px 15px;
 }
 
-.dropdown-item {
-  background: none;
-  border: none;
+#dropdown-user-menu a {
   color: white;
-  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#dropdown-user-menu a:hover {
+  text-decoration: underline;
+}
+
+#dropdown-user-item {
+  border-bottom: 1px solid white;
   display: flex;
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  justify-content: center;
-  padding: 0.5rem 1.5rem;
-  width: 100%;
+  padding: 10px 5px;
 }
 
-.dropdown-item:hover {
-  background-color: #09445B;
-}
-
-.dropdown-divider {
-  background-color: white;
-  height: 1px;
-  margin: 0;
-  opacity: 0.2;
+#dropdown-user-item:hover {
+  background-color: transparent;
 }

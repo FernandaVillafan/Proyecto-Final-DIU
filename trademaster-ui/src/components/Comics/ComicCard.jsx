@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Button } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 // Importamos el archivo CSS
 import './ComicCard.css';
+
+// Importamos el contexto
+import { useComics } from '../../context/ComicsContext';
 
 // Importamos el archivo para los mensajes (alert)
 import swalMessages from '../../services/SwalMessages';
@@ -13,28 +17,29 @@ import favoriteIcon from '../../images/favorite.png';
 import favoriteRedIcon from '../../images/red-heart.png';
 import detailsIcon from '../../images/details.png';
 import deleteIcon from '../../images/delete.png';
-import defaultImage from '../../images/default.jpeg';
-import { useNavigate } from 'react-router-dom';
+import defaultImage from '../../images/default-comic.jpeg';
 
 const ComicCard = ({ 
-    comic, 
-    isFavorite = false, 
-    onWishListUpdate, 
-    isWishListView = false
+    comic,
+    isWishListView = false,
+    isMyComicsView = false
 }) => {
-    const navigate = useNavigate();
-    // Función para manejar el click en el ícono de favorito
-    const handleFavoriteClick = async () => {
-        const token = localStorage.getItem("access_token");
 
-        // Verificamos si existe el token antes de continuar
-        if (!token) {
+    const navigate = useNavigate(); // Hook para manejar la navegación
+    
+    // Obtenemos los datos del contexto
+    const { fetchInitialData, wishList, isAuthenticated } = useComics();
+    const comicId = comic?.id || comic?.comic?.id;
+    const isFavorite = useMemo(() => wishList.has(comicId), [wishList, comicId]);
+    
+    // Función para manejar el click en el ícono de favorito
+    const handleFavoriteClick = useCallback(async () => {
+        if (!isAuthenticated) {
             swalMessages.errorMessage("Tienes que iniciar sesión para realizar esta acción");
             return;
         }
-
-        const comicId = comic?.id || comic?.comic?.id;
-        if (!comicId) return;
+        
+        const token = localStorage.getItem("access_token");
 
         try {
             if (isWishListView) {
@@ -43,24 +48,24 @@ const ComicCard = ({
                 if (!result.isConfirmed) return;
 
                 // Eliminamos de la wishlist
-                const response = await axios.delete(
-                    `${process.env.REACT_APP_API_URL}/api/comics/wishlist/delete/${comicId}/`,
+                // Realizamos la solicitud DELETE al endpoint de eliminar un cómic de la wishlist
+                const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/comics/wishlist/delete/${comicId}/`,
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
                     }
                 );
-
-                if (response.data.message === "Comic deleted successfully") {
+                // Verificamos que la respuesta sea exitosa
+                if (response.status === 201 || response.status === 200) {
                     // Mostramos un mensaje de éxito
-                    swalMessages.successMessage("¡Comic eliminado de tu lista de deseos!");
-                    if (onWishListUpdate) onWishListUpdate();
+                    swalMessages.successMessage(response.data?.message);
+                    // Obtenemos los datos de los cómics con la eliminación hecha
+                    await fetchInitialData();
                 }
             } else if (!isFavorite) {
                 // Agregamos a la wishlist
-                const response = await axios.post(
-                    `${process.env.REACT_APP_API_URL}/api/comics/wishlist/add/${comicId}/`, 
+                const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/comics/wishlist/add/${comicId}/`, 
                     {},
                     {
                         headers: {
@@ -68,87 +73,76 @@ const ComicCard = ({
                         }
                     }
                 );
-
-                if (response.data.message === "Comic added to wishlist") {
+                // Verificamos que la respuesta sea exitosa
+                if (response.status === 201 || response.status === 200) {
                     // Mostramos un mensaje de éxito
-                    swalMessages.successMessage("¡Comic agregado a tu lista de deseos!");
-                    if (onWishListUpdate) onWishListUpdate();
+                    swalMessages.successMessage(response.data?.message);
+                    // Obtenemos los datos de los cómics con la inserción hecha
+                    await fetchInitialData();
                 }
             }
         } catch (error) {
-            swalMessages.errorMessage(isWishListView ? 
-                "No se pudo eliminar el comic de la lista de deseos" : 
-                "No se pudo agregar el comic a la lista de deseos"
-            );
+            swalMessages.errorMessage(error.response?.data?.message);
             console.error('Error en handleFavoriteClick: ', error);
         }
-    };
+    }, [comicId, isFavorite, isWishListView, fetchInitialData, isAuthenticated]);
 
-    const handleDetailsClick = async () => {
-        const token = localStorage.getItem("access_token");
-
-        // Verificamos si existe el token antes de continuar
-        if (!token) {
+    // Función para manejar el click en el botón de detalles
+    const handleDetailsClick = useCallback(() => {
+        if (!isAuthenticated) {
             swalMessages.errorMessage("Tienes que iniciar sesión para realizar esta acción");
             return;
         }
-    
-        const comicId = comic?.id || comic?.comic?.id;
+        // Navegación a la vista correspondiente
+        navigate(`/details/${comicId}`);
+    }, [comicId, navigate, isAuthenticated]);
 
-        if (comicId) {
-            navigate(`/details/${comicId}`);
-        } else {
-            swalMessages.errorMessage("No se pudo cargar el detalle del cómic");
-        }
-    }
-
-    // Asegurarse de que tengamos datos válidos antes de renderizar
     const comicData = comic?.comic || comic;
     if (!comicData) return null;
 
     return (
 
         <div className="comic-info">
-            {/* Imagen del comic */}
+            {/* Imagen del cómic */}
             <div className="comic-image-container">
-                {comicData.image ? (
-                    <img 
-                        src={`http://localhost:8000/${comicData.image}`} 
-                        alt="..." 
-                        className="comic-cover"
-                    />
-                ) : (
-                    <img src={defaultImage} alt="..." className="default-image" />
-                )}
+                <img 
+                    src={comicData.image ? `${process.env.REACT_APP_API_URL}/${comicData.image}` : defaultImage} 
+                    alt="..." 
+                    className={comicData.image ? "comic-cover" : "default-image"}
+                />
             </div>
 
-            {/* Icono de favorito */}
-            {!isWishListView && (
-                <span 
-                    className="span-favorite"
-                    onClick={handleFavoriteClick}
-                    style={{ cursor: 'pointer' }}
-                >
-                    <img 
-                        src={isFavorite ? favoriteRedIcon : favoriteIcon}
-                        alt="..." 
-                        className="favorite-icon"
-                    />
-                </span>
-            )}
+            {/* Ícono de favorito */}
+            <span 
+                className="span-favorite"
+                onClick={handleFavoriteClick}
+                style={(isWishListView || isMyComicsView) 
+                    ? { opacity: 0 } 
+                    : {
+                        cursor: isFavorite ? 'default' : 'pointer',
+                        opacity: isFavorite ? 0.8 : 1,
+                        pointerEvents: isFavorite ? 'none' : 'auto'
+                    }
+                }
+            >
+                <img 
+                    src={isFavorite ? favoriteRedIcon : favoriteIcon}
+                    alt="..." 
+                    className="favorite-icon"
+                />
+            </span>
 
-            {/* Datos del comic */}
+            {/* Datos del cómic */}
             <div className="comic-data">
                 <p className="title-text">{comicData.title}</p>
                 <p className="edition-text">Edición: {comicData.edition}</p>
                 <p className="price-text">${comicData.price} MXN</p>
             </div>
 
-            {/* Botón para ver detalles del comic */}
+            {/* Botón para ver detalles del cómic */}
             <div className="btn-details-div">
                 <Button 
                     className="btn-secondary" 
-                    variant="secondary"
                     onClick={handleDetailsClick}
                 >
                     Detalles
@@ -163,7 +157,6 @@ const ComicCard = ({
                 <div className="btn-delete-div">
                     <Button 
                         className="btn-danger"
-                        variant="secondary"
                         onClick={handleFavoriteClick}
                     >
                         Eliminar

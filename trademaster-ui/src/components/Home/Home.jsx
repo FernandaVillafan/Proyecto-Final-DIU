@@ -4,19 +4,21 @@ import { Helmet } from "react-helmet";
 // Importamos el archivo CSS
 import "./Home.css";
 
+// Importamos el componente del navbar
+import Navbar from "../Navbar/Navbar";
+
+// Importamos el componente de los cards de cómics
+import ComicsPage from "../Comics/ComicsPage";
+
 // Importamos los íconos (imágenes png)
 import homeImage from "../../images/home.jpeg";
 import arrowDown from "../../images/arrow-down.png";
 import comicsIcon from "../../images/book.png";
 
-// Importamos el componente del navbar
-import Navbar from "../Navbar/Navbar";
-
-// Importamos el componente de los cards de comics
-import ComicsPage from "../Comics/ComicsPage";
-
 const Home = () => {
+
   return (
+
     <div className="home-container">
       {/* Nombre de la vista */}
       <Helmet>
@@ -41,11 +43,11 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Sección de comics */}
+      {/* Sección de cómics */}
       <div className="new-comics-container">
         <span className="comics-span">
           <img src={comicsIcon} className="comics-icon" alt="..." />
-          Comics Recién Agregados
+          Cómics Recién Agregados
         </span>
       </div>
 

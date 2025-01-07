@@ -11,19 +11,15 @@ class SwalMessages {
         confirmButtonText: 'Sí',
         cancelButtonText: 'Cancelar',
         customClass: {
-          title: 'swal-title',
-          icon: 'swal-icon',
           confirmButton: 'btn btn-yes',
-          cancelButton: 'btn btn-no',
-          container: 'swal-container',
-          popup: 'swal-popup'
+          cancelButton: 'btn btn-cancel'
         },
         buttonsStyling: false
       });
     };
   }
     
-  // show confirmation message
+  // Confirmation message
   successMessage(message) {
     Swal.fire({
       position: 'top-end',
@@ -43,7 +39,7 @@ class SwalMessages {
     });
   }
    
-  // show error message
+  // Error message
   errorMessage(message) {
     if (message === null) {
       Swal.fire({

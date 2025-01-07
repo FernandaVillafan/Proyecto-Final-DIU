@@ -1,130 +1,113 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Form } from "react-bootstrap";
-import axios from "axios";
 
 // Importamos el archivo CSS
 import "./ComicsPage.css";
 
+// Importamos el contexto
+import { useComics } from '../../context/ComicsContext';
+
 // Importamos los componentes necesarios
 import Navbar from "../Navbar/Navbar";
 import ComicCard from "./ComicCard";
+import { setSearchTerm } from '../../redux/searchSlice';
 
-const categories = [
+// Objeto para las categorías
+const CATEGORIES = [
   { value: "all", label: "Todas las categorías" },
-  { value: "Independiente", label: "Independiente" },
+  { value: "independiente", label: "Independiente" },
   { value: "supercomic", label: "SuperComic" },
   { value: "eclipse", label: "Eclipse Entertainment" },
   { value: "manga", label: "Manga" },
 ];
 
 const ComicsPage = () => {
-  // Estados necesarios para cargar los comics
-  const [comics, setComics] = useState([]);
-  const [wishList, setWishList] = useState(new Set());
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
 
+  // Obtenemos los datos y funciones del contexto
+  const { comicsData, fetchInitialData } = useComics();
+  
+  // Estados para manejar el filtro de categorías y la barra de búsqueda
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const dispatch = useDispatch();
   const searchTerm = useSelector((state) => state.search.searchTerm);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-
-    try {
-      // Primero obtenemos los comics
-      const comicsResponse = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/comics/`
-      );
-
-      // Verificamos si hay un token
-      const token = localStorage.getItem("access_token");
-
-      if (token) {
-        // Si hay token, obtenemos la wishlist
-        const wishListResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/comics/wishlist/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const wishListIds = new Set(
-          wishListResponse.data.data
-            ?.map((item) => item.comic?.id)
-            .filter(Boolean)
-        );
-        setWishList(wishListIds);
-      }
-
-      setComics(comicsResponse.data.data || []);
-    } catch (error) {
-      console.error("Error completo en fetchData: ", error);
-      setComics([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Reset de categoría cuando hay una búsqueda
   useEffect(() => {
-    fetchData(); // Llamada inicial
-  }, []);
-
-  // Función para obtener los comics filtrados por categoría o por la barra de búsqueda
-  const getFilteredComics = () => {
-    let filteredComics = comics;
-
-    if (selectedCategory !== "all") {
-      filteredComics = filteredComics.filter(
-        (comic) => comic.category === selectedCategory
-      );
-    }
-
     if (searchTerm) {
-      filteredComics = filteredComics.filter((comic) =>
-        comic.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      setSelectedCategory("all");
     }
+  }, [searchTerm]);
 
-    return filteredComics;
+  // Manejador del cambio de categoría
+  const handleCategoryChange = (e) => {
+    const newCategory = e.target.value;
+    setSelectedCategory(newCategory);
+    // Limpiamos la búsqueda cuando se selecciona una categoría
+    if (newCategory !== "all") {
+      dispatch(setSearchTerm(""));
+    }
   };
 
-  const renderComics = () => {
-    if (isLoading) {
-      return <div className="no-comics-message">Cargando...</div>;
+  // Función para cargar los datos de los cómics
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Función para obtener los cómics filtrados por categoría o por la barra de búsqueda
+  const filteredComics = useMemo(() => {
+    let filtered = comicsData;
+    // Aplicamos el filtro de categoría
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(
+        comic => comic.category?.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+    // Aplicamos la búsqueda
+    if (searchTerm) {
+      filtered = comicsData.filter(
+        comic => comic.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    const filteredComics = getFilteredComics();
+    return filtered;
+  }, [comicsData, selectedCategory, searchTerm]);
 
+  // Función para renderizar los cards de cómics
+  const renderComics = useMemo(() => {
     if (filteredComics.length === 0) {
       return <div className="no-comics-message">No hay cómics disponibles</div>;
     }
 
     return (
+
       <div className="comics-grid">
-        {filteredComics.map((comic) => (
+        {filteredComics.map(comic => (
           <ComicCard
             key={comic.id}
             comic={comic}
-            isFavorite={wishList.has(comic.id)}
-            onWishListUpdate={fetchData}
           />
         ))}
       </div>
     );
-  };
+  }, [filteredComics]);
 
   return (
+    
     <div>
-      <Navbar onComicPublished={fetchData} />
+      {/* Componente Navbar */}
+      <Navbar />
+      
       <div className="comics-page-container">
+        {/* Select de las categorías */}
         <div className="category-select-container">
           <Form>
             <Form.Select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={handleCategoryChange}
               className="category-select"
             >
-              {categories.map((category) => (
+              {CATEGORIES.map(category => (
                 <option key={category.value} value={category.value}>
                   {category.label}
                 </option>
@@ -132,7 +115,9 @@ const ComicsPage = () => {
             </Form.Select>
           </Form>
         </div>
-        <div className="comics-section">{renderComics()}</div>
+        
+        {/* Lista de los cards de cómics */}
+        <div className="comics-section">{renderComics}</div>
       </div>
     </div>
   );

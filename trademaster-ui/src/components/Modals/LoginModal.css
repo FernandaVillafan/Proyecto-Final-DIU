@@ -1,11 +1,7 @@
-#username,
-#password {
-  border: 2px solid #DADADA !important;
+.input-group.username {
+  margin-top: 15px;
 }
 
-.footer-text {
-  color: #6F6E6E;
-  font-style: italic;
-  padding: 5px;
-  text-align: center;
+.input-group.password {
+  padding-bottom: 10px;
 }
