@@ -14,6 +14,13 @@ import swalMessages from '../../services/SwalMessages';
 import priceIcon from '../../images/money.png';
 import uploadIcon from '../../images/upload.png';
 
+// Constante con los tipos MIME permitidos por Django ImageField
+const VALID_IMAGE_TYPES = {
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/gif': ['.gif']
+};
+
 const PublishComicModal = ({ show, handleClose }) => {
 
     // Obtenemos la información del contexto
@@ -53,6 +60,11 @@ const PublishComicModal = ({ show, handleClose }) => {
             })); 
         }
     }, []);
+
+    // Función auxiliar para validar el tipo de imagen
+    const isValidImageType = (file) => {
+        return Object.keys(VALID_IMAGE_TYPES).includes(file.type);
+    };
 
     // Función para resetear los campos del formulario
     const resetForm = () => {
@@ -94,18 +106,23 @@ const PublishComicModal = ({ show, handleClose }) => {
         ];
         const emptyFields = requiredFields.filter(field => !newComic[field]);
         // Si falta llenar algún campo o la imagen
-        if (emptyFields.length > 0 || !newComic.image) {
+        if (emptyFields.length > 0 || newComic.image.length === 0) {
             swalMessages.errorMessage("Por favor, completa todos los campos requeridos");
             return false;
-        } 
+        }
         // Si el formato de la imagen no es válido
-        if (!(newComic.image instanceof File)) {
-            swalMessages.errorMessage("Por favor, selecciona una imagen válida");
+        if (!isValidImageType(newComic.image)) {
+            swalMessages.errorMessage("Por favor, selecciona una imagen válida (JPG, JPEG, PNG o GIF)");
             return false;
         }
         // Validamos que el precio sea mayor a 0
         if (parseFloat(newComic.price) <= 0) {
             swalMessages.errorMessage("El precio debe ser mayor a 0");
+            return false;
+        }
+        // Validamos que el precio no sea mayor a 10 dígitos
+        if (parseFloat(newComic.price) > 1000000000) {
+            swalMessages.errorMessage("El precio no debe ser mayor 1 billón");
             return false;
         }
 
@@ -248,6 +265,17 @@ const PublishComicModal = ({ show, handleClose }) => {
                                     onChange={handleInputChange}
                                     placeholder="0.00"
                                     step="0.01"
+                                    min="0"
+                                    pattern="^\d*\.?\d{0,2}$"
+                                    onBlur={(e) => {
+                                        if (e.target.value) {
+                                            const formattedValue = parseFloat(e.target.value).toFixed(2);
+                                            setNewComic(prevState => ({
+                                                ...prevState,
+                                                price: formattedValue,
+                                            }));
+                                        }
+                                    }}
                                 />
                             </div>
                         </Form.Group>

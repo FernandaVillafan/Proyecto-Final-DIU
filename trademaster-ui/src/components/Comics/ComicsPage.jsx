@@ -22,13 +22,21 @@ const CATEGORIES = [
   { value: "manga", label: "Manga" },
 ];
 
+// Objeto para las opciones de ordenamiento
+const SORT_OPTIONS = [
+  { value: "none", label: "Sin ordenar" },
+  { value: "asc", label: "A-Z" },
+  { value: "desc", label: "Z-A" },
+];
+
 const ComicsPage = () => {
 
   // Obtenemos los datos y funciones del contexto
   const { comicsData, fetchInitialData } = useComics();
   
-  // Estados para manejar el filtro de categorías y la barra de búsqueda
+  // Estados para manejar los filtros y la barra de búsqueda
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortOrder, setSortOrder] = useState("none");
   const dispatch = useDispatch();
   const searchTerm = useSelector((state) => state.search.searchTerm);
 
@@ -47,6 +55,11 @@ const ComicsPage = () => {
     if (newCategory !== "all") {
       dispatch(setSearchTerm(""));
     }
+  };
+
+  // Manejador del cambio de ordenamiento
+  const handleSortChange = (e) => {
+    setSortOrder(e.target.value);
   };
 
   // Función para cargar los datos de los cómics
@@ -69,9 +82,21 @@ const ComicsPage = () => {
         comic => comic.title?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    // Aplicamos el ordenamiento
+    if (sortOrder !== "none") {
+      filtered = [...filtered].sort((a, b) => {
+        const titleA = (a.title || "").toLowerCase();
+        const titleB = (b.title || "").toLowerCase();
+        if (sortOrder === "asc") {
+          return titleA.localeCompare(titleB);
+        } else {
+          return titleB.localeCompare(titleA);
+        }
+      });
+    }
 
     return filtered;
-  }, [comicsData, selectedCategory, searchTerm]);
+  }, [comicsData, selectedCategory, searchTerm, sortOrder]);
 
   // Función para renderizar los cards de cómics
   const renderComics = useMemo(() => {
@@ -99,9 +124,22 @@ const ComicsPage = () => {
       <Navbar />
       
       <div className="comics-page-container">
-        {/* Select de las categorías */}
         <div className="category-select-container">
-          <Form>
+          <Form className="category-form">
+            {/* Select para el ordenamiento alfabético */}
+            <Form.Select
+              value={sortOrder}
+              onChange={handleSortChange}
+              className="category-select"
+            >
+              {SORT_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Form.Select>
+
+            {/* Select de las categorías */}
             <Form.Select
               value={selectedCategory}
               onChange={handleCategoryChange}
@@ -115,7 +153,7 @@ const ComicsPage = () => {
             </Form.Select>
           </Form>
         </div>
-        
+
         {/* Lista de los cards de cómics */}
         <div className="comics-section">{renderComics}</div>
       </div>

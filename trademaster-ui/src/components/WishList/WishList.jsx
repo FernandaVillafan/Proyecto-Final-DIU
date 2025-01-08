@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
@@ -26,17 +27,37 @@ const WishList = () => {
   // Filtramos los cómics que están en la wishlist
   const wishListComics = comicsData.filter(comic => wishList.has(comic.id));
 
+  // Estado para manejar la barra de búsqueda
+  const searchTerm = useSelector((state) => state.search.searchTerm);
+
+  // Función para obtener los cómics filtrados por la barra de búsqueda
+  const filteredComics = useMemo(() => {
+    let filtered = wishListComics;
+    // Aplicamos la búsqueda
+    if (searchTerm) {
+      filtered = wishListComics.filter(
+        comic => comic.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered
+  }, [wishListComics, searchTerm]);
+
   // Función para renderizar los cards de cómics
   const renderComics = useMemo(() => {
     // Si no hay cómics en la wishlist
     if (!wishListComics || wishListComics.length === 0) {
       return <div className="no-comics-message">No hay cómics en tu lista de deseos</div>
     }
+    // Si no se encuentran cómics en la búsqueda
+    if (filteredComics.length === 0) {
+      return <div className="no-comics-message">No hay cómics disponibles</div>;
+    }
 
     return (
 
       <div className="comics-grid">
-        {wishListComics.map((comic) => (
+        {filteredComics.map((comic) => (
           <ComicCard
             key={comic.id}
             comic={comic}
@@ -45,7 +66,7 @@ const WishList = () => {
         ))}
       </div>
     );
-  }, [wishListComics]);
+  }, [wishListComics, filteredComics]);
 
   return (
 

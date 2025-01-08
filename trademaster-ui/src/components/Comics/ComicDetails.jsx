@@ -46,7 +46,7 @@ const ComicDetails = () => {
 
     <>
       {/* Componente Navbar */}
-      <Navbar alternativeTitle="Detalles del Cómic" />
+      <Navbar alternativeTitle="Detalles del Cómic" isComicDetailsView={true} />
 
       {/* Botón de 'Volver' */}
       <div className="btn btn-back-container">

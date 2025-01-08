@@ -11,6 +11,13 @@ import swalMessages from '../../services/SwalMessages';
 import uploadIcon from '../../images/upload.png';
 import photoIcon from "../../images/photo.png";
 
+// Constante con los tipos MIME permitidos por Django ImageField
+const VALID_IMAGE_TYPES = {
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/gif': ['.gif']
+};
+
 const EditImageButton = ({ comicId }) => {
 
     // Obtenemos los datos del contexto
@@ -27,6 +34,12 @@ const EditImageButton = ({ comicId }) => {
 
     // Función para cambiar la imagen del cómic
     const handleSubmit = useCallback(async () => {
+        // Validamos el formato de la imagen
+        if (!isValidImageType(selectedImage)) {
+            swalMessages.errorMessage("Por favor, selecciona una imagen válida (JPG, JPEG, PNG o GIF)");
+            return false;
+        }
+
         // Creamos el objeto FormData para mandar los datos al endpoint
         const formData = new FormData();
         formData.append('image', selectedImage);
@@ -46,6 +59,20 @@ const EditImageButton = ({ comicId }) => {
             console.error('Error en handleSubmit: ', error);
         }
     }, [selectedImage, comicId, updateComicImage]);
+
+    // Función auxiliar para validar el tipo de imagen
+    const isValidImageType = (file) => {
+        return Object.keys(VALID_IMAGE_TYPES).includes(file.type);
+    };
+
+    // Función para manejar la imagen
+    const handleImageUpload = useCallback((e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            setFileName(file.name);
+        }
+    }, []);
 
     return (
         
@@ -82,13 +109,7 @@ const EditImageButton = ({ comicId }) => {
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    setSelectedImage(file);
-                                    setFileName(file.name);
-                                }
-                            }}
+                            onChange={handleImageUpload}
                             className="d-none"
                             id="photo-upload"
                         />

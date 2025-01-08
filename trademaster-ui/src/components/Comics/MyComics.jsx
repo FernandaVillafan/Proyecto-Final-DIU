@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +20,22 @@ const MyComics = () => {
     // Obtenemos los datos y funciones del contexto
     const { comicsData, fetchMyComics, resetToAllComics } = useComics();
 
+    // Estado para manejar la barra de búsqueda
+    const searchTerm = useSelector((state) => state.search.searchTerm);
+
+    // Función para obtener los cómics filtrados por la barra de búsqueda
+    const filteredComics = useMemo(() => {
+        let filtered = comicsData;
+        // Aplicamos la búsqueda
+        if (searchTerm) {
+            filtered = comicsData.filter(
+                comic => comic.title?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        return filtered
+    }, [comicsData, searchTerm]);
+
     // Función para cargar los datos de los cómics
     useEffect(() => {
         fetchMyComics();
@@ -26,14 +43,19 @@ const MyComics = () => {
 
     // Función para renderizar los cards de cómics
     const renderComics = useMemo(() => {
+        // Si no hay cómics publicados por el usuario
         if (!comicsData || comicsData.length === 0) {
             return <div className="no-comics-message">No has publicado cómics aún</div>;
+        }
+        // Si no se encuentran cómics en la búsqueda
+        if (filteredComics.length === 0) {
+            return <div className="no-comics-message">No hay cómics disponibles</div>;
         }
 
         return (
 
         <div className="comics-grid">
-            {comicsData.map(comic => (
+            {filteredComics.map(comic => (
                 <ComicCard
                     key={comic.id}
                     comic={comic}
@@ -42,7 +64,7 @@ const MyComics = () => {
             ))}
         </div>
         );
-    }, [comicsData]);
+    }, [comicsData, filteredComics]);
 
     return (
 

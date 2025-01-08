@@ -25,6 +25,8 @@ import comicsIcon from "../../images/book.png";
 const Navbar = ({ 
   alternativeIcon, 
   alternativeTitle,
+  isComicDetailsView = false,
+  isOffersPageView = false,
   isEditUserView = false,
   isEditComicView = false
 }) => {
@@ -133,7 +135,7 @@ const Navbar = ({
             </span>
           </>
           
-          {(isEditUserView || isEditComicView) ? (
+          {(isComicDetailsView || isOffersPageView || isEditUserView || isEditComicView) ? (
             <div className="hidden-container"></div>
           ) : (
             <div className="search-container">

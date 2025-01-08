@@ -83,6 +83,12 @@ const EditDataButton = () => {
         // Verificamos si hay algún cambio
         if (!hasChanges) return;
 
+        // Verificamos si la contraseña tiene la longitud mínima (8 caracteres)
+        if (formData.password.length < 8) {
+            swalMessages.errorMessage("La contraseña debe tener como mínimo 8 caracteres de longitud");
+            return;
+        }
+
         // Verificamos los campos de contraseña (si se quiere cambiar este campo)
         if (formData.password && formData.password !== formData.confirm_password) {
             swalMessages.errorMessage("Las contraseñas no coinciden");

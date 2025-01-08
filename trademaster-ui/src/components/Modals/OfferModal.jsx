@@ -13,6 +13,13 @@ import swalMessages from "../../services/SwalMessages";
 // Importamos los íconos (imágenes png)
 import uploadIcon from '../../images/upload.png';
 
+// Constante con los tipos MIME permitidos por Django ImageField
+const VALID_IMAGE_TYPES = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/gif': ['.gif']
+};
+
 const OfferModal = ({ show, handleClose, comicId }) => {
 
   // Obtenemos los datos del contexto
@@ -49,6 +56,11 @@ const OfferModal = ({ show, handleClose, comicId }) => {
     }
   }, []);
 
+  // Función auxiliar para validar el tipo de imagen
+  const isValidImageType = (file) => {
+    return Object.keys(VALID_IMAGE_TYPES).includes(file.type);
+  };
+
   // Función para resetear los campos del formulario
   const resetForm = () => {
     setNewOffer({
@@ -84,6 +96,13 @@ const OfferModal = ({ show, handleClose, comicId }) => {
       swalMessages.errorMessage("Por favor, completa todos los campos requeridos");
       return false;
     }
+
+    // Si se sube una imagen, validamos el formato
+    if (!isValidImageType(newOffer.image)) {
+      swalMessages.errorMessage("Por favor, selecciona una imagen válida (JPG, JPEG, PNG o GIF)");
+      return false;
+    }
+
     return true;
   }, [newOffer]);
 

@@ -126,7 +126,11 @@ const OffersPage = () => {
 
     <>
       {/* Componente Navbar */}
-      <Navbar alternativeIcon={offerIcon} alternativeTitle="Bandeja de Ofertas" />
+      <Navbar 
+        alternativeIcon={offerIcon} 
+        alternativeTitle="Bandeja de Ofertas"
+        isOffersPageView={true} 
+      />
 
       {/* Botón de 'Volver' */}
       <div className="btn btn-back-container">

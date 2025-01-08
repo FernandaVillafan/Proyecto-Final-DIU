@@ -11,8 +11,8 @@ class Comic(models.Model):
     edition = models.CharField(max_length=100)
     condition = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.DecimalField(max_digits=5, decimal_places=2)
-    image = models.ImageField(upload_to=settings.COMIC_IMAGES_PATH, blank=True, null=False)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to=settings.COMIC_IMAGES_PATH, blank=False, null=False)
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comics_sold')
     is_sold = models.BooleanField(default=False)  # True: vendido, False: No vendido
     category = models.CharField(max_length=100, default='Independiente')
