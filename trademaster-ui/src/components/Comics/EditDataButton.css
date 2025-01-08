@@ -1,0 +1,13 @@
+#formtitle,
+#formpublisher,
+#formedition,
+#formcondition,
+#formdescription,
+#formprice {
+    border: 2px solid #DADADA !important;
+    border-radius: 30px !important;
+}
+
+#formcondition {
+    margin: 0.5rem 0rem;
+}

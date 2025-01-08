@@ -2,6 +2,9 @@ import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
+// Importamos el archivo CSS
+import "./EditPage.css";
+
 // Importamos el contexto
 import { useComics } from '../../context/ComicsContext';
 
@@ -53,9 +56,9 @@ const EditPage = () => {
             </div>
 
             {currentComic && (
-                <div className="comic-details-container">
+                <div className="edit-comic-container">
                     <div className="row">
-                        <div className="col-md-4 comic-image-div">
+                        <div className="col-md-4 comic-img-div">
                             {/* Imagen del cómic */}
                             <div className="d-inline-block">
                                 <img 
@@ -71,10 +74,10 @@ const EditPage = () => {
 
                         <div className="col-md-8">
                             {/* Datos del cómic */}
-                            <div className="comic-details">
+                            <div className="comic-dtls">
                                 <div className="row">
                                     {/* Título del cómic */}
-                                    <div className="title-container">
+                                    <div className="title-div">
                                         <span>{currentComic.title}</span>
                                     </div>
                                 </div>
@@ -106,7 +109,7 @@ const EditPage = () => {
                                 </div>
 
                                 {/* Descripción del cómic */}
-                                <div className="description-container">
+                                <div className="description-div">
                                     <span>{currentComic.description}</span>
                                 </div>
                             </div>
@@ -114,19 +117,17 @@ const EditPage = () => {
                     </div>
 
                     <div className="row">
-                        <div className="col-md-4">
+                        <div className="col-md-4 edit-button">
                             {/* Botón para editar la imagen del cómic */}
-                            <div className="buttons-container">
-                                <EditImageButton />
-                            </div>
+                            <EditImageButton comicId={comicId} />
                         </div>
 
-                        <div className="col-md-8">
+                        <div className="col-md-7 edit-button">
                             {/* Botón para editar los datos del cómic */}
-                            <div className="buttons-container">
-                                <EditDataButton />
-                            </div>
+                            <EditDataButton comicId={comicId} />
                         </div>
+
+                        <div className="col-md-1"></div>
                     </div>
                 </div>
             )}

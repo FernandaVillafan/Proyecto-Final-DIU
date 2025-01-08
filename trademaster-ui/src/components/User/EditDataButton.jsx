@@ -38,7 +38,7 @@ const EditDataButton = () => {
     // Función para obtener los datos al cargar la página
     useEffect(() => {
         if (userData) {
-            setFormData ({
+            setFormData({
                 name: userData.name || "",
                 last_name: userData.last_name || "",
                 email: userData.email || "",
@@ -136,7 +136,19 @@ const EditDataButton = () => {
             </Button>
 
             {/* Modal para editar los datos del usuario */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+            <Modal show={showModal} onHide={() => {
+                setShowModal(false);
+                setFormData({
+                    name: userData.name || "",
+                    last_name: userData.last_name || "",
+                    email: userData.email || "",
+                    password: "",
+                    confirm_password: "",
+                    phone: userData.phone || "",
+                    username: userData.username || ""
+                });
+                setHasChanges(false);
+            }} centered>
                 <Modal.Header closeButton className="border-0">
                     {/* Título del modal */}
                     <Modal.Title>Editar Datos</Modal.Title>

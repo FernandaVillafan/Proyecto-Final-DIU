@@ -171,6 +171,113 @@ export const ComicsProvider = ({ children }) => {
         fetchInitialData();
     }, [fetchInitialData]);
 
+    // Función para actualizar los datos del cómic
+    const updateComicData = useCallback(async (comicId, newData) => {
+        if (!isAuthenticated || !newData) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Realizamos la solicitud PUT al endpoint de actualizar el cómic
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/comics/update-comic/${comicId}/`,
+                newData,
+                {
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            // Actualizamos el cómic actual en el estado
+            setCurrentComic(prevComic => ({
+                ...prevComic,
+                ...newData
+            }));
+
+            // Actualizamos también el cómic en el array de cómics
+            setComicsData(prevComics => 
+                prevComics.map(comic => 
+                    comic.id === comicId 
+                        ? { ...comic, ...newData }
+                        : comic
+                )
+            );
+
+            // Actualizamos el caché
+            const cachedComic = comicsCache().get(comicId);
+            if (cachedComic) {
+                comicsCache().set(comicId, {
+                    ...cachedComic,
+                    ...newData
+                });
+            }
+
+            return response.data;
+        } catch (error) {
+            setError("Error en updateComicData: ", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated, getAuthHeaders, comicsCache]);
+
+    // Función para actualizar la imagen del cómic
+    const updateComicImage = useCallback(async (comicId, newImage) => {
+        if (!isAuthenticated || !newImage) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Realizamos la solicitud PUT al endpoint de actualizar el cómic (imagen)
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/comics/update-image/${comicId}/`,
+                newImage,
+                {
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+
+            // Obtenemos la nueva imagen desde la respuesta
+            const updatedImage = response.data.data.image;
+
+            // Actualizamos el cómic actual en el estado
+            setCurrentComic(prevComic => ({
+                ...prevComic,
+                image: updatedImage
+            }));
+
+            // Actualizamos también el cómic en el array de cómics
+            setComicsData(prevComics => 
+                prevComics.map(comic => 
+                    comic.id === comicId 
+                        ? { ...comic, image: updatedImage }
+                        : comic
+                )
+            );
+
+            // Actualizamos el caché
+            const cachedComic = comicsCache().get(comicId);
+            if (cachedComic) {
+                comicsCache().set(comicId, {
+                    ...cachedComic,
+                    image: updatedImage
+                });
+            }
+
+            return response.data;
+        } catch (error) {
+            setError("Error en updateComicImage: ", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated, getAuthHeaders, comicsCache]);
+
     const value = {
         comicsData,
         wishList,
@@ -184,6 +291,8 @@ export const ComicsProvider = ({ children }) => {
         createComic,
         fetchMyComics,
         resetToAllComics,
+        updateComicData,
+        updateComicImage,
         clearCurrentComic: useCallback(() => setCurrentComic(null), [])
     };
 

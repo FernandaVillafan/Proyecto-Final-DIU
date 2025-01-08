@@ -64,6 +64,7 @@ const EditImageButton = () => {
             {/* Modal para editar la foto de perfil */}
             <Modal show={showModal} onHide={() => {
                 setShowModal(false);
+                setSelectedImage(null);
                 setFileName('Ninguna imagen seleccionada');
             }} centered>
                 <Modal.Header closeButton className="border-0">

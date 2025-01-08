@@ -1,0 +1,56 @@
+.edit-comic-container {
+    margin: 1rem 2rem 1rem 3rem;
+}
+
+.comic-img-div {
+    align-items: flex-start;
+    display: flex;
+    justify-content: center;   
+}
+
+.comic-img-div img {
+    border-radius: var(--radius-card);
+    height: 30rem;
+    object-fit: cover;
+    width: auto;
+}
+
+.comic-dtls {
+    background-color: white;
+    border: 2px solid #D1D1D1;
+    border-radius: var(--radius-card);
+    display: flex;
+    flex-direction: column;
+    height: 30rem;
+    padding: 20px 40px;
+    position: absolute;
+    width: 60rem;
+}
+
+.title-div {
+    margin: 1rem 0rem 2.5rem 0rem;
+}
+
+.title-div span {
+    color: black;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.description-div {
+    flex: 1;
+    margin-top: 1.3rem;
+    overflow-y: auto;
+}
+
+.description-div span {
+    color: #535B5B;
+    font-size: 1.15rem;
+    line-height: 1.8;
+}
+
+.edit-button {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.3rem;
+}
